@@ -9,9 +9,8 @@ const cors = {
 Bun.serve({
     async fetch(req) {
         const url = new URL(req.url);
-        const pathname = path.normalize(url.pathname);
-        const filepath = path.join(process.cwd(), "assets", pathname);
-        const file = Bun.file(filepath);
+        const filepath = path.join(process.cwd(), "assets", url.pathname);
+        const file = Bun.file(path.normalize(filepath));
 
         if (await file.exists()) {
             const founded = await file.bytes();
