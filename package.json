@@ -10,8 +10,5 @@
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
-  },
-  "dependencies": {
-    "file-type": "^19.5.0"
   }
 }

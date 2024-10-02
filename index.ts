@@ -1,5 +1,4 @@
 import path from "path/posix";
-import { fileTypeFromBuffer } from "file-type";
 
 const cors = {
     "Access-Control-Allow-Origin": "*",
@@ -9,17 +8,23 @@ const cors = {
 Bun.serve({
     async fetch(req) {
         const url = new URL(req.url);
-        const filepath = path.join(process.cwd(), "assets", url.pathname);
-        const file = Bun.file(path.normalize(filepath));
+
+        const assetsPath = path.join(process.cwd(), "assets");
+        const filePath = path.join(assetsPath, url.pathname);
+        const normalized = path.normalize(filePath);
+
+        // Pencegahan directory traversal
+        if (!normalized.startsWith(assetsPath)) {
+            return new Response("403 Forbidden", { status: 403, headers: cors })
+        }
+
+        const file = Bun.file(normalized);
 
         if (await file.exists()) {
-            const founded = await file.bytes();
-            const mime = await fileTypeFromBuffer(founded)
-                .then(res => res?.mime ?? "application/octet-stream");
-
-            return new Response(founded, {
+            const bytes = await file.bytes();
+            return new Response(bytes, {
                 status: 200,
-                headers: { "Content-Type": mime, ...cors }
+                headers: { "Content-Type": file.type, ...cors }
             });
         } else {
             return new Response("404 Not Found", { status: 404, headers: cors });
